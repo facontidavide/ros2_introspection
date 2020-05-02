@@ -17,7 +17,7 @@ Ros2Introspection::Parser parser;
 // register **once** your type
 parser.registerMessageType("imu", "sensor_msgs/Imu");
 
-FlatMessage flat_msg;
+Ros2Introspection::FlatMessage flat_msg;
 unsigned max_array_size = 100;
 parser.deserializeIntoFlatMessage("imu", serialized_msg, &flat_msg, max_array_size);  
   
