@@ -161,7 +161,15 @@ TEST(Ros2Introspection, Polygon) {
   parser.registerMessageType("poly", topic_type);
 
   const int max_array_size = 3;
+
+  parser.setMaxArrayPolicy( Parser::DISCARD_LARGE_ARRAYS );
   parser.deserializeIntoFlatMessage("poly", serialized_msg.get(), &flat_message, max_array_size);
+  ASSERT_EQ( flat_message.values.size(), 0 );
+
+  parser.setMaxArrayPolicy( Parser::KEEP_LARGE_ARRAYS );
+  parser.deserializeIntoFlatMessage("poly", serialized_msg.get(), &flat_message, max_array_size);
+  ASSERT_EQ( flat_message.values.size(), 3*max_array_size );
+
 
   ConvertFlatMessageToRenamedValues(flat_message, renamed);
 
@@ -170,7 +178,6 @@ TEST(Ros2Introspection, Polygon) {
     std::cout << pair.first << " = " << pair.second << std::endl;
   }
 
-  ASSERT_EQ( renamed.size(), 3*max_array_size );
 
   size_t index = 0;
   ASSERT_EQ( renamed[index].first, "/poly/points.0/x");
@@ -244,12 +251,11 @@ TEST(Ros2Introspection, Battery) {
   Parser parser;
   FlatMessage flat_message;
   RenamedValues renamed;
-  const int max_array_size = 3;
 
   parser.registerMessageType("battery", topic_type);
 
   parser.deserializeIntoFlatMessage("battery", serialized_msg.get(),
-                                    &flat_message, max_array_size);
+                                    &flat_message, 100);
 
   ConvertFlatMessageToRenamedValues(flat_message, renamed);
 
@@ -349,8 +355,7 @@ TEST(Ros2Introspection, Image) {
 
   parser.registerMessageType("image", topic_type);
 
-  const int max_array_size = 3;
-  parser.deserializeIntoFlatMessage("image", serialized_msg.get(), &flat_message, max_array_size);
+  parser.deserializeIntoFlatMessage("image", serialized_msg.get(), &flat_message, 100);
 
   ConvertFlatMessageToRenamedValues(flat_message, renamed);
 

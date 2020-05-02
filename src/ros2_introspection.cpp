@@ -87,7 +87,7 @@ bool Parser::deserializeIntoFlatMessage(
   const auto message_info_it = _registered_messages.find(msg_identifier);
   if(message_info_it == _registered_messages.end())
   {
-    throw std::runtime_error("Message not registered");
+    throw std::runtime_error("Message identifier not registered");
   }
 
   eprosima::fastcdr::FastBuffer buffer( reinterpret_cast<char*>(msg->buffer), msg->buffer_length);
@@ -154,7 +154,8 @@ bool Parser::deserializeIntoFlatMessage(
           new_tree_leaf.index_array.back() = a;
         }
 
-        if( a >= max_array_size)
+        if((_discard_large_array == DISCARD_LARGE_ARRAYS &&  array_size >= max_array_size) ||
+           (_discard_large_array == KEEP_LARGE_ARRAYS &&  a >= max_array_size))
         {
           skip_save = true;
         }
@@ -216,6 +217,7 @@ bool Parser::deserializeIntoFlatMessage(
 
   return true;
 }
+
 
 void ConvertFlatMessageToRenamedValues(
   const FlatMessage &flat,

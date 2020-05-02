@@ -71,8 +71,7 @@ struct Ros2MessageInfo{
 class Parser{
 
 public:
-  Parser(): _global_warnings(&std::cerr),
-            _discard_large_array(DISCARD_LARGE_ARRAYS)
+  Parser(): _discard_large_array(DISCARD_LARGE_ARRAYS)
  {}
 
   enum MaxArrayPolicy: bool {
@@ -129,14 +128,9 @@ public:
                                   FlatMessage* flat_container_output,
                                   const uint32_t max_array_size ) const;
 
-  /// Change where the warning messages are displayed.
-  void setWarningsStream(std::ostream* output) { _global_warnings = output; }
-
 private:
 
   std::unordered_map<std::string, Ros2MessageInfo> _registered_messages;
-
-  std::ostream* _global_warnings;
 
   MaxArrayPolicy _discard_large_array;
 };
