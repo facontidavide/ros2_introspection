@@ -132,13 +132,11 @@ bool Parser::deserializeIntoFlatMessage(
       if(array_size > MAX_ARRAY_SIZE &&
           (member.type_id_ == ROS_TYPE_INT8 || member.type_id_ == ROS_TYPE_UINT8))
       {
-        uint32_t blob_size = CastFromBuffer<uint32_t>(cdr);
-
         if( !skip_save ){
-          BufferView blob(cdr.getCurrentPosition(), blob_size);
+          BufferView blob(cdr.getCurrentPosition(), array_size);
           flat_container->blobs.push_back( {new_tree_leaf, std::move(blob)} );
         }
-        cdr.jump(blob_size);
+        cdr.jump(array_size);
 
         continue;
       }

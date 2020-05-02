@@ -4,6 +4,7 @@
 #include <sensor_msgs/msg/imu.hpp>
 #include <geometry_msgs/msg/polygon.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
+#include <sensor_msgs/msg/image.hpp>
 #include <gtest/gtest.h>
 #include "test_utils.h"
 
@@ -128,6 +129,9 @@ TEST(Ros2Introspection, Imu) {
     ASSERT_EQ( renamed[index].second, imu_msg.linear_acceleration_covariance[i]);
     index++;
   }
+
+  ASSERT_EQ( flat_message.blobs.size(), 0 );
+  ASSERT_EQ( flat_message.strings.size(), 1 );
 }
 
 // Good to test variable arrays. Test also the maximum array size
@@ -197,6 +201,9 @@ TEST(Ros2Introspection, Polygon) {
   index++;
   ASSERT_EQ( renamed[index].first, "/poly/points.2/z");
   ASSERT_EQ( renamed[index].second, polygon.points[2].z);
+
+  ASSERT_EQ( flat_message.blobs.size(), 0 );
+  ASSERT_EQ( flat_message.strings.size(), 0 );
 }
 
 // Good to test constants
@@ -308,5 +315,82 @@ TEST(Ros2Introspection, Battery) {
   ASSERT_EQ( flat_message.strings[2].second, battery.serial_number );
   index++;
 
+  ASSERT_EQ( flat_message.blobs.size(), 0 );
 }
 
+// Test blob
+TEST(Ros2Introspection, Image) {
+
+  sensor_msgs::msg::Image image;
+  std::string topic_type = "sensor_msgs/Image";
+
+  image.header.stamp.sec = 123;
+  image.header.stamp.nanosec = 456;
+  image.header.frame_id = "camera";
+
+  image.height = 10;
+  image.width = 11;
+  image.encoding = "a saco";
+  image.is_bigendian = 1;
+  image.step = 66;
+  image.data.resize(10000,0);
+
+  image.data.front() = 111;
+  image.data.back()  = 222;
+
+  const auto* typesupport =
+    rosbag2::get_typesupport(topic_type, rosidl_typesupport_cpp::typesupport_identifier);
+  auto serialized_msg =  RmwInterface().serialize_message(image, typesupport);
+
+  //-------------------------
+  Parser parser;
+  FlatMessage flat_message;
+  RenamedValues renamed;
+
+  parser.registerMessageType("image", topic_type);
+
+  const int max_array_size = 3;
+  parser.deserializeIntoFlatMessage("image", serialized_msg.get(), &flat_message, max_array_size);
+
+  ConvertFlatMessageToRenamedValues(flat_message, renamed);
+
+  for(const auto& pair: renamed)
+  {
+    std::cout << pair.first << " = " << pair.second << std::endl;
+  }
+
+  size_t index = 0;
+  ASSERT_EQ( renamed[index].first, "/image/header/stamp/sec" );
+  ASSERT_EQ( renamed[index].second, image.header.stamp.sec );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/image/header/stamp/nanosec" );
+  ASSERT_EQ( renamed[index].second, image.header.stamp.nanosec );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/image/height" );
+  ASSERT_EQ( renamed[index].second, image.height );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/image/width" );
+  ASSERT_EQ( renamed[index].second, image.width );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/image/is_bigendian" );
+  ASSERT_EQ( renamed[index].second, image.is_bigendian );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/image/step" );
+  ASSERT_EQ( renamed[index].second, image.step );
+  index++;
+
+  ASSERT_EQ( flat_message.strings.size(), 2 );
+  ASSERT_EQ( flat_message.strings[0].second, image.header.frame_id);
+  ASSERT_EQ( flat_message.strings[1].second, image.encoding);
+
+  ASSERT_EQ( flat_message.blobs.size(), 1);
+  const auto& blob = flat_message.blobs.front().second;
+
+  size_t buffer_size = blob.getBufferSize();
+  ASSERT_EQ( buffer_size, image.data.size() );
+
+  ASSERT_EQ( blob.getBuffer()[0], image.data[0]);
+  ASSERT_EQ(static_cast<uint8_t>(blob.getBuffer()[buffer_size-1]),
+            image.data[buffer_size-1]);
+
+}
