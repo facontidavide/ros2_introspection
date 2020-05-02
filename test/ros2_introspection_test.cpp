@@ -178,7 +178,6 @@ TEST(Ros2Introspection, Polygon) {
     std::cout << pair.first << " = " << pair.second << std::endl;
   }
 
-
   size_t index = 0;
   ASSERT_EQ( renamed[index].first, "/poly/points.0/x");
   ASSERT_EQ( renamed[index].second, polygon.points[0].x);

@@ -49,9 +49,9 @@ using StringView = boost::string_ref;
 
 using BufferView  = eprosima::fastcdr::FastBuffer;
 
-using StringTreeNode = Ros2Introspection::details::TreeNode<std::string>;
+using StringTreeNode = Ros2Introspection::TreeNode<std::string>;
 
-using StringTree = Ros2Introspection::details::Tree<std::string>;
+using StringTree = Ros2Introspection::Tree<std::string>;
 
 /**
  * @brief The StringTreeLeaf is, as the name suggests, a leaf (terminal node)

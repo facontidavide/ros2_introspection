@@ -212,7 +212,7 @@ bool Parser::deserializeIntoFlatMessage(
   flat_container->tree = &message_info.field_tree;
 
   StringTreeLeaf rootnode;
-  rootnode.node_ptr = message_info.field_tree.croot()->child(0);
+  rootnode.node_ptr = message_info.field_tree.root()->child(0);
   recursiveParser( message_info.type_support, rootnode, false);
 
   return true;

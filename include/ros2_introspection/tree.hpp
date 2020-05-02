@@ -44,14 +44,11 @@
 
 namespace Ros2Introspection {
 
-namespace details{
-
 /**
  * @brief Element of the tree. it has a single parent and N >= 0 children.
  */
 template <typename T> class TreeNode
 {
-
 public:
 
   typedef std::vector<TreeNode> ChildrenVector; // dangerous because of pointer invalidation (but faster)
@@ -85,19 +82,10 @@ template <typename T> class Tree
 public:
   Tree(): _root( new TreeNode<T>(nullptr) ) {}
 
-  /**
-     * Find a set of elements in the tree and return the pointer to the leaf.
-     * The first element of the concatenated_values should be a root of the Tree.
-     * The leaf corresponds to the last element of concatenated_values in the Tree.
-     */
-  template<typename Vect> const TreeNode<T>* find( const Vect& concatenated_values, bool partial_allowed = false);
-
-  /// Constant pointer to the root of the tree.
-  const TreeNode<T>* croot() const { return _root.get(); }
-
-  /// Mutable pointer to the root of the tree.
+   /// Mutable pointer to the root of the tree.
   TreeNode<T>* root() { return _root.get(); }
 
+  const TreeNode<T>* root() const { return _root.get(); }
 
   friend std::ostream& operator<<(std::ostream& os, const Tree& _this){
     _this.print_impl(os, _this.croot() , 0);
@@ -171,36 +159,6 @@ TreeNode<T> *TreeNode<T>::addChild(const T& value)
   _children.push_back( TreeNode<T>(this) );
   _children.back().setValue( value );
   return &_children.back();
-}
-
-
-template <typename T> template<typename Vect> inline
-const TreeNode<T> *Tree<T>::find(const Vect& concatenated_values, bool partial_allowed )
-{
-  TreeNode<T>* node = &_root;
-
-  for (const auto& value: concatenated_values)
-  {
-    bool found = false;
-    for (auto& child: (node->children() ) )
-    {
-      if( child.value() == value)
-      {
-        node = &(child);
-        found = true;
-        break;
-      }
-    }
-    if( !found ) return nullptr;
-  }
-
-  if( partial_allowed || node->children().empty() )
-  {
-    return  node;
-  }
-  return nullptr;
-}
-
 }
 
 }
