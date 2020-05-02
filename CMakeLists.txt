@@ -23,8 +23,11 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosbag2 REQUIRED)
 
+add_library(${PROJECT_NAME}
+    src/ros2_introspection.cpp
+    src/stringtree.cpp
+   )
 
-add_library(${PROJECT_NAME} src/ros2_introspection.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
@@ -38,13 +41,12 @@ ament_target_dependencies(${PROJECT_NAME}
 
 #------------------
 add_executable(ros2_parsing_test
-    src/ros2_msg_parsing.cpp
-    src/stringtree.cpp
+    test/ros2_introspection_test.cpp
     )
 target_include_directories(ros2_parsing_test PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
-target_link_libraries(ros2_parsing_test ${PROJECT_NAME})
+target_link_libraries(ros2_parsing_test ${PROJECT_NAME} gtest gtest_main)
 
 install(TARGETS ros2_parsing_test
   EXPORT export_${PROJECT_NAME}
