@@ -5,9 +5,10 @@
 #include <rosbag2/typesupport_helpers.hpp>
 #include <rosbag2/types/introspection_message.hpp>
 #include <rcutils/time.h>
-#include <fastcdr/FastBuffer.h>
-#include <fastcdr/FastCdr.h>
 #include <functional>
+#include <cmath>
+#include  <sensor_msgs/msg/imu__rosidl_typesupport_fastrtps_c.h>
+#include  <fastcdr/Cdr.h>
 
 namespace Ros2Introspection
 {
@@ -60,7 +61,7 @@ void Parser::registerMessageType(
   info.field_tree.root()->children().reserve(1);
   auto starting_node =  info.field_tree.root()->addChild(message_identifier);
 
-  // start building recurisively
+  // start building recursively
   recursivelyCreateTree( starting_node, info.type_support );
 
   std::pair<std::string,Ros2MessageInfo> pair;
@@ -69,45 +70,40 @@ void Parser::registerMessageType(
   _registered_messages.insert( std::move(pair) );
 }
 
-template <typename T> inline T CastFromBuffer(BufferView buffer, size_t offset)
-{
-  const size_t N = sizeof(T);
-  if( offset+N > buffer.size())
-  {
-    throw std::runtime_error("Buffer overrun");
-  };
-  T value = (*reinterpret_cast<T*>(buffer.data() + offset));
- // offset += N;
-  return value;
-}
 
+template <typename T> inline T CastFromBuffer(eprosima::fastcdr::Cdr& cdr)
+{
+  T tmp;
+  cdr.deserialize(tmp);
+  return tmp;
+}
 
 bool Parser::deserializeIntoFlatMessage(
   const std::string &msg_identifier,
-  BufferView buffer,
+  const rcutils_uint8_array_t* msg,
   FlatMessage *flat_container,
   const uint32_t max_array_size) const
 {
-  eprosima::fastcdr::FastBuffer fast_buffer( reinterpret_cast<char*>(buffer.data()), buffer.size());
-  eprosima::fastcdr::FastCdr fast_cdr(fast_buffer);
-
   const auto message_info_it = _registered_messages.find(msg_identifier);
   if(message_info_it == _registered_messages.end())
   {
     throw std::runtime_error("Message not registered");
   }
 
+  eprosima::fastcdr::FastBuffer buffer( reinterpret_cast<char*>(msg->buffer), msg->buffer_length);
+  eprosima::fastcdr::Cdr cdr(buffer, eprosima::fastcdr::Cdr::DEFAULT_ENDIAN,
+                             eprosima::fastcdr::Cdr::DDS_CDR);
+  cdr.read_encapsulation();
+
   auto& message_info = message_info_it->second;
 
   using TypeSupport = rosidl_message_type_support_t;
 
-  std::function<void(const TypeSupport*, BufferView&, StringTreeLeaf&, size_t, bool)> recursiveParser;
+  std::function<void(const TypeSupport*, StringTreeLeaf&, bool)> recursiveParser;
 
   //---------- recursive function -------------
   recursiveParser = [&](const TypeSupport* type_data,
-                        BufferView& buffer,
                         StringTreeLeaf& tree_leaf,
-                        size_t parent_offset,
                         bool skip_save)
   {
     using namespace rosidl_typesupport_introspection_cpp;
@@ -122,13 +118,11 @@ bool Parser::deserializeIntoFlatMessage(
 
       size_t array_size = 1;
 
-      size_t offset = parent_offset + member.offset_;
-
       if(member.is_array_)
       {
         if( member.array_size_ == 0)
         {
-          array_size = size_t(CastFromBuffer<uint32_t>(buffer, offset));
+          array_size = size_t(CastFromBuffer<uint32_t>(cdr));
         }
         else{
           array_size = member.array_size_;
@@ -136,18 +130,16 @@ bool Parser::deserializeIntoFlatMessage(
       }
 
       if(array_size > MAX_ARRAY_SIZE &&
-         (member.type_id_ == ROS_TYPE_INT8 || member.type_id_ == ROS_TYPE_UINT8))
+          (member.type_id_ == ROS_TYPE_INT8 || member.type_id_ == ROS_TYPE_UINT8))
       {
-        int32_t blob_size = CastFromBuffer<int32_t>(buffer, offset);
-        if( blob_size > buffer.size())
-        {
-          throw std::runtime_error("Buffer overrun");
-        };
+        uint32_t blob_size = CastFromBuffer<uint32_t>(cdr);
+
         if( !skip_save ){
-          BufferView blob(reinterpret_cast<uint8_t*>(buffer.data() + offset + sizeof(int32_t)), blob_size);
-          flat_container->blob.push_back( {new_tree_leaf, blob} );
+          BufferView blob(cdr.getCurrentPosition(), blob_size);
+          flat_container->blobs.push_back( {new_tree_leaf, std::move(blob)} );
         }
-        buffer = buffer.subspan(blob_size);
+        cdr.jump(blob_size);
+
         continue;
       }
 
@@ -174,65 +166,55 @@ bool Parser::deserializeIntoFlatMessage(
           double value = 0;
           switch( member.type_id_)
           {
-            case ROS_TYPE_FLOAT:   value = double(CastFromBuffer<float>(buffer, member.offset_)); break;
-            case ROS_TYPE_DOUBLE:  value = double(CastFromBuffer<double>(buffer, member.offset_)); break;
+            case ROS_TYPE_FLOAT:   value = double(CastFromBuffer<float>(cdr)); break;
+            case ROS_TYPE_DOUBLE:  value = double(CastFromBuffer<double>(cdr)); break;
 
-            case ROS_TYPE_INT64:   value = double(CastFromBuffer<int64_t>(buffer, member.offset_)); break;
-            case ROS_TYPE_INT32:   value = double(CastFromBuffer<int32_t>(buffer, member.offset_)); break;
-            case ROS_TYPE_INT16:   value = double(CastFromBuffer<int16_t>(buffer, member.offset_)); break;
-            case ROS_TYPE_INT8:    value = double(CastFromBuffer<int8_t>(buffer, member.offset_)); break;
+            case ROS_TYPE_INT64:   value = double(CastFromBuffer<int64_t>(cdr)); break;
+            case ROS_TYPE_INT32:   value = double(CastFromBuffer<int32_t>(cdr)); break;
+            case ROS_TYPE_INT16:   value = double(CastFromBuffer<int16_t>(cdr)); break;
+            case ROS_TYPE_INT8:    value = double(CastFromBuffer<int8_t>(cdr)); break;
 
-            case ROS_TYPE_UINT64:  value = double(CastFromBuffer<uint64_t>(buffer, member.offset_)); break;
-            case ROS_TYPE_UINT32:  value = double(CastFromBuffer<uint32_t>(buffer, member.offset_)); break;
-            case ROS_TYPE_UINT16:  value = double(CastFromBuffer<uint16_t>(buffer, member.offset_)); break;
-            case ROS_TYPE_UINT8:   value = double(CastFromBuffer<uint8_t>(buffer, member.offset_)); break;
+            case ROS_TYPE_UINT64:  value = double(CastFromBuffer<uint64_t>(cdr)); break;
+            case ROS_TYPE_UINT32:  value = double(CastFromBuffer<uint32_t>(cdr)); break;
+            case ROS_TYPE_UINT16:  value = double(CastFromBuffer<uint16_t>(cdr)); break;
+            case ROS_TYPE_UINT8:   value = double(CastFromBuffer<uint8_t>(cdr)); break;
 
-            case ROS_TYPE_BOOLEAN: value = double(CastFromBuffer<bool>(buffer, member.offset_)); break;
+            case ROS_TYPE_BOOLEAN: value = double(CastFromBuffer<bool>(cdr)); break;
           }
           if( !skip_save )
           {
-            flat_container->value.push_back( {new_tree_leaf, value} );
+            flat_container->values.push_back( {new_tree_leaf, value} );
           }
         }
         else if(member.type_id_ == ROS_TYPE_STRING)
         {
-          int32_t str_length = CastFromBuffer<int32_t>(buffer, member.offset_);
-          if( str_length > buffer.size())
-          {
-            throw std::runtime_error("Buffer overrun");
-          };
-          if( !skip_save )
-          {
-            StringView str(reinterpret_cast<char*>(buffer.data()+offset+4), size_t(str_length));
-            flat_container->string.push_back( {new_tree_leaf, str} );
+          if( !skip_save ){
+            std::string str;
+            cdr.deserialize( str );
+            flat_container->strings.push_back( {new_tree_leaf, std::move(str)} );
           }
-          buffer = buffer.subspan(str_length);
+          else{
+            static std::string tmp;
+            cdr.deserialize( tmp );
+          }
         }
-        else if(member.type_id_ == ROS_TYPE_MESSAGE){
-          recursiveParser( member.members_, buffer, new_tree_leaf, offset, skip_save );
+        else if(member.type_id_ == ROS_TYPE_MESSAGE)
+        {
+          recursiveParser( member.members_, new_tree_leaf, skip_save );
         }
       } // end for array
     } // end for members
   };
   //---------- END recursive function -------------
 
-  flat_container->blob.clear();
-  flat_container->string.clear();
-  flat_container->value.clear();
-
+  flat_container->blobs.clear();
+  flat_container->strings.clear();
+  flat_container->values.clear();
   flat_container->tree = &message_info.field_tree;
 
   StringTreeLeaf rootnode;
   rootnode.node_ptr = message_info.field_tree.croot()->child(0);
-
-  buffer = buffer.subspan(4);
-
-  recursiveParser( message_info.type_support, buffer, rootnode, 0, false);
-
-  if( buffer.size() > 1 )
-  {
-    throw std::runtime_error("Buffer left after parsing");
-  }
+  recursiveParser( message_info.type_support, rootnode, false);
 
   return true;
 }
@@ -241,7 +223,7 @@ void ConvertFlatMessageToRenamedValues(
   const FlatMessage &flat,
   RenamedValues &renamed)
 {
-  const auto& values = flat.value;
+  const auto& values = flat.values;
   renamed.resize(values.size());
 
   for(size_t i=0; i<values.size(); i++)

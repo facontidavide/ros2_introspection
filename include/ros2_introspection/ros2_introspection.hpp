@@ -49,16 +49,16 @@ struct FlatMessage {
 
   /// List of all those parsed fields that can be represented by a builtin value different from "string".
   /// This list will be filled by the funtion buildRosFlatType.
-  std::vector< std::pair<StringTreeLeaf, double> > value;
+  std::vector< std::pair<StringTreeLeaf, double> > values;
 
   /// List of all those parsed fields that can be represented by a builtin value equal to "string".
   /// This list will be filled by the funtion buildRosFlatType.
-  std::vector< std::pair<StringTreeLeaf, StringView> > string;
+  std::vector< std::pair<StringTreeLeaf, std::string> > strings;
 
   /// Store "blobs", i.e all those fields which are vectors of BYTES (AKA uint8_t),
   /// where the vector size is greater than the argument [max_array_size]
   /// passed  to the function deserializeIntoFlatContainer
-  std::vector< std::pair<StringTreeLeaf, BufferView>> blob;
+  std::vector< std::pair<StringTreeLeaf, BufferView> > blobs;
 };
 
 typedef std::vector< std::pair<std::string, double> > RenamedValues;
@@ -125,7 +125,7 @@ public:
    * skipped because an array has (size > max_array_size)
    */
   bool deserializeIntoFlatMessage(const std::string& msg_identifier,
-                                  BufferView buffer,
+                                  const rcutils_uint8_array_t *msg,
                                   FlatMessage* flat_container_output,
                                   const uint32_t max_array_size ) const;
 

@@ -39,15 +39,15 @@
 #include <iostream>
 #include <boost/container/small_vector.hpp>
 #include <boost/container/static_vector.hpp>
-#include <ros2_introspection/3rdparty/span.hpp>
-#include <ros2_introspection/3rdparty/string_view.hpp>
+#include <boost/utility/string_ref.hpp>
 #include <ros2_introspection/tree.hpp>
+#include <fastcdr/FastBuffer.h>
 
 namespace Ros2Introspection{
 
-using StringView = nonstd::string_view;
+using StringView = boost::string_ref;
 
-using BufferView  = nonstd::span<uint8_t>;
+using BufferView  = eprosima::fastcdr::FastBuffer;
 
 using StringTreeNode = Ros2Introspection::details::TreeNode<std::string>;
 

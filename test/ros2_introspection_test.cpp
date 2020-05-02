@@ -21,7 +21,7 @@ TEST(Ros2Introspection, Imu) {
 
   imu_msg.header.stamp.sec = 3;
   imu_msg.header.stamp.nanosec = 4;
-  imu_msg.header.frame_id = "hell";
+  imu_msg.header.frame_id = "hello_world";
   imu_msg.orientation.x = 111;
   imu_msg.orientation.y = 112;
   imu_msg.orientation.z = 113;
@@ -42,19 +42,18 @@ TEST(Ros2Introspection, Imu) {
     imu_msg.linear_acceleration_covariance[i] = 20+i;
   }
 
-  const auto* imu_typesupport =
+  const auto* typesupport =
     rosbag2::get_typesupport(topic_type, rosidl_typesupport_cpp::typesupport_identifier);
-  auto serialized_msg =  RmwInterface().serialize_message(imu_msg, imu_typesupport);
+  auto serialized_msg =  RmwInterface().serialize_message(imu_msg, typesupport);
 
-
-  FlatMessage flat_message;
   Parser parser;
+  FlatMessage flat_message;
+  RenamedValues renamed;
+
   parser.registerMessageType("imu", topic_type);
 
-  BufferView buffer(serialized_msg->buffer, serialized_msg->buffer_length);
-  parser.deserializeIntoFlatMessage("imu", buffer, &flat_message, 100);
-
-  RenamedValues renamed;
+  parser.deserializeIntoFlatMessage("imu", serialized_msg.get(),
+                                    &flat_message, 100);
 
   ConvertFlatMessageToRenamedValues(flat_message, renamed);
 
@@ -157,9 +156,8 @@ TEST(Ros2Introspection, Polygon) {
 
   parser.registerMessageType("poly", topic_type);
 
-  BufferView buffer(serialized_msg->buffer, serialized_msg->buffer_length);
   const int max_array_size = 3;
-  parser.deserializeIntoFlatMessage("poly", buffer, &flat_message, max_array_size);
+  parser.deserializeIntoFlatMessage("poly", serialized_msg.get(), &flat_message, max_array_size);
 
   ConvertFlatMessageToRenamedValues(flat_message, renamed);
 
@@ -209,6 +207,8 @@ TEST(Ros2Introspection, Battery) {
 
   // for this test, let's just check first and last field
   battery.header.stamp.sec = 123;
+  battery.header.stamp.nanosec =456;
+  battery.header.frame_id = "it_works!!";
 
   battery.voltage = 1;
   battery.temperature = 2;
@@ -226,7 +226,8 @@ TEST(Ros2Introspection, Battery) {
   battery.cell_voltage[1] = 6;
   battery.cell_voltage[2] = 7;
 
-  battery.serial_number = 666;
+  battery.location = "noth_pole";
+  battery.serial_number = "666";
 
   const auto* typesupport =
     rosbag2::get_typesupport(topic_type, rosidl_typesupport_cpp::typesupport_identifier);
@@ -236,12 +237,12 @@ TEST(Ros2Introspection, Battery) {
   Parser parser;
   FlatMessage flat_message;
   RenamedValues renamed;
+  const int max_array_size = 3;
 
   parser.registerMessageType("battery", topic_type);
 
-  BufferView buffer(serialized_msg->buffer, serialized_msg->buffer_length);
-  const int max_array_size = 3;
-  parser.deserializeIntoFlatMessage("battery", buffer, &flat_message, max_array_size);
+  parser.deserializeIntoFlatMessage("battery", serialized_msg.get(),
+                                    &flat_message, max_array_size);
 
   ConvertFlatMessageToRenamedValues(flat_message, renamed);
 
@@ -249,5 +250,63 @@ TEST(Ros2Introspection, Battery) {
   {
     std::cout << pair.first << " = " << pair.second << std::endl;
   }
+
+  size_t index = 0;
+  ASSERT_EQ( renamed[index].first, "/battery/header/stamp/sec" );
+  ASSERT_EQ( renamed[index].second, battery.header.stamp.sec );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/header/stamp/nanosec" );
+  ASSERT_EQ( renamed[index].second, battery.header.stamp.nanosec );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/voltage" );
+  ASSERT_EQ( renamed[index].second, battery.voltage );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/temperature" );
+  ASSERT_EQ( renamed[index].second, battery.temperature );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/current" );
+  ASSERT_EQ( renamed[index].second, battery.current );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/charge" );
+  ASSERT_EQ( renamed[index].second, battery.charge );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/capacity" );
+  ASSERT_EQ( renamed[index].second, battery.capacity );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/design_capacity" );
+  ASSERT_EQ( renamed[index].second, battery.design_capacity );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/percentage" );
+  ASSERT_EQ( renamed[index].second, battery.percentage );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/power_supply_status" );
+  ASSERT_EQ( renamed[index].second, battery.power_supply_status );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/power_supply_health" );
+  ASSERT_EQ( renamed[index].second, battery.power_supply_health );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/power_supply_technology" );
+  ASSERT_EQ( renamed[index].second, battery.power_supply_technology );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/present" );
+  ASSERT_EQ( renamed[index].second, battery.present );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/cell_voltage.0" );
+  ASSERT_EQ( renamed[index].second, battery.cell_voltage[0] );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/cell_voltage.1" );
+  ASSERT_EQ( renamed[index].second, battery.cell_voltage[1] );
+  index++;
+  ASSERT_EQ( renamed[index].first, "/battery/cell_voltage.2" );
+  ASSERT_EQ( renamed[index].second, battery.cell_voltage[2] );
+  index++;
+
+  ASSERT_EQ( flat_message.strings[0].second, battery.header.frame_id );
+  index++;
+  ASSERT_EQ( flat_message.strings[1].second, battery.location );
+  index++;
+  ASSERT_EQ( flat_message.strings[2].second, battery.serial_number );
+  index++;
+
 }
 
