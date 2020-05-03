@@ -390,11 +390,11 @@ TEST(Ros2Introspection, Image) {
   ASSERT_EQ( flat_message.blobs.size(), 1);
   const auto& blob = flat_message.blobs.front().second;
 
-  size_t buffer_size = blob.getBufferSize();
+  size_t buffer_size = blob.size;
   ASSERT_EQ( buffer_size, image.data.size() );
 
-  ASSERT_EQ( blob.getBuffer()[0], image.data[0]);
-  ASSERT_EQ(static_cast<uint8_t>(blob.getBuffer()[buffer_size-1]),
+  ASSERT_EQ( blob.data[0], image.data[0]);
+  ASSERT_EQ(static_cast<uint8_t>(blob.data[buffer_size-1]),
             image.data[buffer_size-1]);
 
 }

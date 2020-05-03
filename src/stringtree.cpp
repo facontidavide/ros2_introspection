@@ -112,7 +112,7 @@ int StringTreeLeaf::toStr(std::string& buffer_str) const
                                      this->index_array[ array_count++ ] );
     }
     else{
-      if( str !=  strings_chain.front() ){
+      if( offset != 0 ){
         buffer[offset++] = SEPARATOR;
       }
       std::memcpy( &buffer[offset], str->data(), S );

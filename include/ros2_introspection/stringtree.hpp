@@ -47,7 +47,12 @@ namespace Ros2Introspection{
 
 using StringView = boost::string_ref;
 
-using BufferView  = eprosima::fastcdr::FastBuffer;
+struct BufferView {
+    const char* data;
+    size_t size;
+    BufferView(): data(nullptr), size(0) {}
+    BufferView(const char* _data, size_t _size): data(_data), size(_size) {}
+};
 
 using StringTreeNode = Ros2Introspection::TreeNode<std::string>;
 
