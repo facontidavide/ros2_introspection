@@ -92,8 +92,6 @@ struct StringTreeLeaf{
   constexpr static const char NUM_PLACEHOLDER = '#';
 };
 
-void CreateStringFromTreeLeaf(const StringTreeLeaf& leaf, bool skip_root, std::string &out);
-
 //---------------------------------
 
 inline std::ostream& operator<<(std::ostream &os, const StringTreeLeaf& leaf )
