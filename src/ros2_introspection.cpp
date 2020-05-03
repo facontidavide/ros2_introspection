@@ -78,6 +78,24 @@ template <typename T> inline T CastFromBuffer(eprosima::fastcdr::Cdr& cdr)
   return tmp;
 }
 
+bool TypeHasHeader(const rosidl_message_type_support_t* type_support)
+{
+    using namespace rosidl_typesupport_introspection_cpp;
+    const auto* members = static_cast<const MessageMembers*>(type_support->data);
+
+    if( members->member_count_>=1 )
+    {
+        const MessageMember& first_field = members->members_[0];
+        const auto* header_members = static_cast<const MessageMembers*>(first_field.members_->data);
+        if( strcmp( header_members->message_name_, "Header") == 0 &&
+            strcmp( header_members->message_namespace_, "std_msgs::msg") == 0)
+        {
+          return true;
+        }
+    }
+    return false;
+}
+
 bool Parser::deserializeIntoFlatMessage(
   const std::string &msg_identifier,
   const rcutils_uint8_array_t* msg,

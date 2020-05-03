@@ -128,6 +128,17 @@ public:
                                   FlatMessage* flat_container_output,
                                   const uint32_t max_array_size ) const;
 
+
+  const rosidl_message_type_support_t* getIntrospectionSupport(const std::string& msg_identifier)
+  {
+      const auto message_info_it = _registered_messages.find(msg_identifier);
+      if(message_info_it == _registered_messages.end())
+      {
+          throw std::runtime_error("Message identifier not registered");
+      }
+      return message_info_it->second.type_support;
+  }
+
 private:
 
   std::unordered_map<std::string, Ros2MessageInfo> _registered_messages;
@@ -136,5 +147,7 @@ private:
 };
 
 void ConvertFlatMessageToRenamedValues(const FlatMessage& flat, RenamedValues& renamed );
+
+bool TypeHasHeader(const rosidl_message_type_support_t* type_support);
 
 }
