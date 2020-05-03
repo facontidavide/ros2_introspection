@@ -2,9 +2,9 @@
 
 Spiritual successor of [ros_type_introspection](https://github.com/facontidavide/ros_type_introspection) for ROS2.
 
-It allows the use to convert a ROS2 message into a vector of (string/value) pairs, even if its type is not known at compilation-time.
+It allows the user to convert a ROS2 message into a vector of (string/value) pairs, even if its type is not known at compilation-time.
 
-It leverage the nice work done by other people, in particular [Fast-CDR](https://github.com/eProsima/Fast-CDR) and [rosbag2](https://github.com/ros2/rosbag2).
+It leverages the nice work done by other people, in particular [Fast-CDR](https://github.com/eProsima/Fast-CDR) and [rosbag2](https://github.com/ros2/rosbag2).
 
 Typical usage:
 
