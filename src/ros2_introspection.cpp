@@ -158,7 +158,7 @@ bool Parser::deserializeIntoFlatMessage(
         continue;
       }
 
-      if( array_size > 1)
+      if( member.is_array_ )
       {
         new_tree_leaf.index_array.push_back(0);
         new_tree_leaf.node_ptr = new_tree_leaf.node_ptr->child(0);
@@ -166,7 +166,7 @@ bool Parser::deserializeIntoFlatMessage(
 
       for (size_t a=0; a < array_size; a++)
       {
-        if( array_size > 1)
+        if( member.is_array_ )
         {
           new_tree_leaf.index_array.back() = a;
         }
