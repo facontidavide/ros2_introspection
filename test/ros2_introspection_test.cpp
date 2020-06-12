@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <ros2_introspection/ros2_introspection.hpp>
+#include <rosbag2_cpp/typesupport_helpers.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <geometry_msgs/msg/polygon.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
@@ -43,8 +44,9 @@ TEST(Ros2Introspection, Imu) {
     imu_msg.linear_acceleration_covariance[i] = 20+i;
   }
 
+  auto library = rosbag2_cpp::get_typesupport_library(topic_type, rosidl_typesupport_introspection_cpp::typesupport_identifier);
   const auto* typesupport =
-    rosbag2::get_typesupport(topic_type, rosidl_typesupport_cpp::typesupport_identifier);
+    rosbag2_cpp::get_typesupport_handle(topic_type, rosidl_typesupport_introspection_cpp::typesupport_identifier, library);
   auto serialized_msg =  RmwInterface().serialize_message(imu_msg, typesupport);
 
   Parser parser;
@@ -149,8 +151,9 @@ TEST(Ros2Introspection, Polygon) {
     polygon.points.push_back(point);
   }
 
+  auto library = rosbag2_cpp::get_typesupport_library(topic_type, rosidl_typesupport_introspection_cpp::typesupport_identifier);
   const auto* typesupport =
-    rosbag2::get_typesupport(topic_type, rosidl_typesupport_cpp::typesupport_identifier);
+    rosbag2_cpp::get_typesupport_handle(topic_type, rosidl_typesupport_introspection_cpp::typesupport_identifier, library);
   auto serialized_msg =  RmwInterface().serialize_message(polygon, typesupport);
 
   //-------------------------
@@ -242,8 +245,9 @@ TEST(Ros2Introspection, Battery) {
   battery.location = "noth_pole";
   battery.serial_number = "666";
 
+  auto library = rosbag2_cpp::get_typesupport_library(topic_type, rosidl_typesupport_introspection_cpp::typesupport_identifier);
   const auto* typesupport =
-    rosbag2::get_typesupport(topic_type, rosidl_typesupport_cpp::typesupport_identifier);
+    rosbag2_cpp::get_typesupport_handle(topic_type, rosidl_typesupport_introspection_cpp::typesupport_identifier, library);
   auto serialized_msg =  RmwInterface().serialize_message(battery, typesupport);
 
   //-------------------------
@@ -343,8 +347,9 @@ TEST(Ros2Introspection, Image) {
   image.data.front() = 111;
   image.data.back()  = 222;
 
+  auto library = rosbag2_cpp::get_typesupport_library(topic_type, rosidl_typesupport_introspection_cpp::typesupport_identifier);
   const auto* typesupport =
-    rosbag2::get_typesupport(topic_type, rosidl_typesupport_cpp::typesupport_identifier);
+    rosbag2_cpp::get_typesupport_handle(topic_type, rosidl_typesupport_introspection_cpp::typesupport_identifier, library);
   auto serialized_msg =  RmwInterface().serialize_message(image, typesupport);
 
   //-------------------------

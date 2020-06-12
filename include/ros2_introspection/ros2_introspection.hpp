@@ -35,8 +35,8 @@
 
 #include <unordered_map>
 #include <ros2_introspection/stringtree.hpp>
-#include <rosbag2/typesupport_helpers.hpp>
-#include <rosbag2/types/introspection_message.hpp>
+#include <rosbag2_cpp/typesupport_helpers.hpp>
+#include <rosbag2_cpp/types/introspection_message.hpp>
 #include <rosidl_typesupport_cpp/identifier.hpp>
 #include <rosidl_typesupport_introspection_cpp/identifier.hpp>
 
@@ -64,6 +64,7 @@ struct FlatMessage {
 typedef std::vector< std::pair<std::string, double> > RenamedValues;
 
 struct Ros2MessageInfo{
+  std::shared_ptr<rcpputils::SharedLibrary> type_support_library;
   const rosidl_message_type_support_t* type_support;
   StringTree field_tree;
 };
