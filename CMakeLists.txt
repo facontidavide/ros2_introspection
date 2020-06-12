@@ -21,7 +21,7 @@ find_package(rcpputils REQUIRED)
 find_package(rmw_fastrtps_cpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(rosbag2 REQUIRED)
+find_package(rosbag2_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Boost REQUIRED COMPONENTS container)
 
@@ -39,7 +39,7 @@ ament_target_dependencies(${PROJECT_NAME}
   sensor_msgs
   geometry_msgs
   rmw_fastrtps_cpp
-  rosbag2
+  rosbag2_cpp
 )
 
 #------------------
