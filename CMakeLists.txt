@@ -25,14 +25,17 @@ find_package(rosbag2 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Boost REQUIRED COMPONENTS container)
 
+#------------------
+
 add_library(${PROJECT_NAME}
     src/ros2_introspection.cpp
     src/stringtree.cpp
    )
-
+   
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+  
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   rcpputils
@@ -40,25 +43,28 @@ ament_target_dependencies(${PROJECT_NAME}
   geometry_msgs
   rmw_fastrtps_cpp
   rosbag2
+  Boost::container
 )
 
-#------------------
-add_executable(ros2_parsing_test
-    test/ros2_introspection_test.cpp
-    )
-target_include_directories(ros2_parsing_test PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-target_link_libraries(ros2_parsing_test ${PROJECT_NAME} gtest gtest_main Boost::container)
-
-install(TARGETS ros2_parsing_test
-  EXPORT export_${PROJECT_NAME}
+install(TARGETS (${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
+  
+#------------------
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
+ 
   ament_lint_auto_find_test_dependencies()
+
+  ament_add_gtest_executable(ros2_parsing_test  test/ros2_introspection_test.cpp )
+  
+  target_include_directories(ros2_parsing_test PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>)
+  
+  target_link_libraries( ros2_parsing_test ${PROJECT_NAME} )
+
 endif()
 
 ament_package()
