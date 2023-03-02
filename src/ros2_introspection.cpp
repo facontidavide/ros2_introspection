@@ -2,8 +2,8 @@
 
 #include <rosidl_typesupport_introspection_cpp/message_introspection.hpp>
 #include <rosidl_typesupport_introspection_cpp/field_types.hpp>
-#include <rosbag2/typesupport_helpers.hpp>
-#include <rosbag2/types/introspection_message.hpp>
+#include <rosbag2_cpp/typesupport_helpers.hpp>
+#include <rosbag2_cpp/types/introspection_message.hpp>
 #include <rcutils/time.h>
 #include <functional>
 #include <cmath>
@@ -26,7 +26,10 @@ void Parser::registerMessageType(
   using TypeSupport = rosidl_message_type_support_t;
 
   info.type_support =
-    rosbag2::get_typesupport(type_name, rosidl_typesupport_introspection_cpp::typesupport_identifier);
+    rosbag2_cpp::get_typesupport_handle(
+        type_name,
+        rosidl_typesupport_introspection_cpp::typesupport_identifier,
+        rosbag2_cpp::get_typesupport_library(type_name, rosidl_typesupport_introspection_cpp::typesupport_identifier));
 
   //------- create StringTree --------
   using rosidl_typesupport_introspection_cpp::MessageMember;

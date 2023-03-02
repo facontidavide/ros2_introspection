@@ -87,7 +87,8 @@ int StringTreeLeaf::toStr(std::string& buffer_str) const
     {
       num_bytes += 4; // space for up to 999
     }
-    else{
+    else
+    {
       num_bytes += S+1;
     }
     strings_chain.push_back( &str );
