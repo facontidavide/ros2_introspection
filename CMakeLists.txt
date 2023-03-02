@@ -27,7 +27,7 @@ find_package(Boost REQUIRED COMPONENTS container)
 
 #------------------
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
     src/ros2_introspection.cpp
     src/stringtree.cpp
 )
