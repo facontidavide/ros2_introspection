@@ -26,7 +26,10 @@ void Parser::registerMessageType(
   using TypeSupport = rosidl_message_type_support_t;
 
   info.type_support =
-    rosbag2_cpp::get_typesupport_handle(type_name, rosidl_typesupport_introspection_cpp::typesupport_identifier, rosbag2_cpp::get_typesupport_library(type_name, rosidl_typesupport_introspection_cpp::typesupport_identifier));
+    rosbag2_cpp::get_typesupport_handle(
+        type_name,
+        rosidl_typesupport_introspection_cpp::typesupport_identifier,
+        rosbag2_cpp::get_typesupport_library(type_name, rosidl_typesupport_introspection_cpp::typesupport_identifier));
 
   //------- create StringTree --------
   using rosidl_typesupport_introspection_cpp::MessageMember;

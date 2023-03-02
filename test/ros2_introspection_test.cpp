@@ -49,7 +49,7 @@ TEST(Ros2Introspection, Imu) {
     imu_msg.linear_acceleration_covariance[i] = 20+i;
   }
 
-  static rclcpp::Serialization<sensor_msgs::msg::Imu> serializer;
+  rclcpp::Serialization<decltype(imu_msg)> serializer;
   rclcpp::SerializedMessage serialized_msg;
   serializer.serialize_message(&imu_msg, &serialized_msg);
 
@@ -155,7 +155,7 @@ TEST(Ros2Introspection, Polygon) {
     polygon.points.push_back(point);
   }
 
-  static rclcpp::Serialization<geometry_msgs::msg::Polygon> serializer;
+  rclcpp::Serialization<decltype(polygon)> serializer;
   rclcpp::SerializedMessage serialized_msg;
   serializer.serialize_message(&polygon, &serialized_msg);
 
@@ -247,7 +247,7 @@ TEST(Ros2Introspection, Battery) {
   battery.location = "noth_pole";
   battery.serial_number = "666";
 
-  static rclcpp::Serialization<sensor_msgs::msg::BatteryState> serializer;
+  rclcpp::Serialization<decltype(battery)> serializer;
   rclcpp::SerializedMessage serialized_msg;
   serializer.serialize_message(&battery, &serialized_msg);
 
@@ -348,7 +348,7 @@ TEST(Ros2Introspection, Image) {
   image.data.front() = 111;
   image.data.back()  = 222;
 
-  static rclcpp::Serialization<sensor_msgs::msg::Image> serializer;
+  rclcpp::Serialization<decltype(image)> serializer;
   rclcpp::SerializedMessage serialized_msg;
   serializer.serialize_message(&image, &serialized_msg);
 

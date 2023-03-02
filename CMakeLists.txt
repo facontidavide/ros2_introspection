@@ -74,7 +74,11 @@ if(BUILD_TESTING)
 
 endif()
 
-ament_export_targets(export_${PROJECT_NAME})
+install(DIRECTORY include/
+  DESTINATION include
+)
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(
   Boost
   geometry_msgs
@@ -84,4 +88,4 @@ ament_export_dependencies(
   rosbag2_cpp
   sensor_msgs
 )
-ament_package()
+ament_package(CONFIG_EXTRAS "cmake/ConfigExtras.cmake")
