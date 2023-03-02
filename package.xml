@@ -9,18 +9,18 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-    <depend>rcpputils</depend>
-    <depend>rosbag2</depend>
-    <depend>sensor_msgs</depend>
-    <depend>geometry_msgs</depend>
-    <depend>rmw_fastrtps_cpp</depend>
-    <depend>rclcpp</depend>
-    <depend>boost</depend>
-    <depend>gtest</depend>
+  <depend>boost</depend>
+  <depend>geometry_msgs</depend>
+  <depend>gtest</depend>
+  <depend>rclcpp</depend>
+  <depend>rcpputils</depend>
+  <depend>rmw_fastrtps_cpp</depend>
+  <depend>rosbag2_cpp</depend>
+  <depend>sensor_msgs</depend>
 
+  <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
-  <test_depend>ament_cmake_gtest</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
