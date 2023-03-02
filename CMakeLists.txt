@@ -52,7 +52,7 @@ target_link_libraries(${PROJECT_NAME}
 
 install(TARGETS ${PROJECT_NAME}
   EXPORT export_${PROJECT_NAME}
-  DESTINATION lib/${PROJECT_NAME}
+  LIBRARY DESTINATION lib
 )
 
 #------------------
