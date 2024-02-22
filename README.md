@@ -1,6 +1,10 @@
+# Archived
+
+Please check https://github.com/facontidavide/rosx_introspection
+
 # ros2_introspection
 
-Spiritual successor of [ros_type_introspection](https://github.com/facontidavide/ros_type_introspection) for ROS2.
+Successor of [ros_type_introspection](https://github.com/facontidavide/ros_type_introspection) for ROS2.
 
 It allows the user to convert a ROS2 message into a vector of (string/value) pairs, even if its type is not known at compilation-time.
 
